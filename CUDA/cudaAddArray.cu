@@ -31,26 +31,32 @@ int main(int argc, char** argv)
     auto c = C.data();
     {
         po::simpleTimer timer("for_each");
-        thrust::for_each(thrust::counting_iterator<int>(0),thrust::counting_iterator<int>(N),[a,b,c]__device__(int id)
+        for(int i = 0; i < 1000 ;i++)
         {
-            c[id] = a[id] + b[id];
-            // C[id] = A[id] + B[id];
-        }
+            thrust::for_each(thrust::counting_iterator<int>(0),thrust::counting_iterator<int>(N),[a,b,c]__device__(int id)
+            {
+                c[id] = a[id] + b[id];
+                // C[id] = A[id] + B[id];
+            }
             );
+        }
         std::cout << "Out" << std::endl;
 
     }
-
+    thrust::device_event e(thrust::new_stream);
     {
         po::simpleTimer timer("for_each_async");
 
-        auto double_ts_event = thrust::async::for_each(
-            thrust::device,thrust::counting_iterator<int>(0),thrust::counting_iterator<int>(N),
-            [a,b,c]__device__(int id){
-                c[id] = a[id] + b[id];
-            }
-        );
-
+        for(int i = 0; i < 1000; i++)
+        {
+            e = thrust::async::for_each(
+                thrust::device.after(e),thrust::counting_iterator<int>(0),thrust::counting_iterator<int>(N),
+                [a,b,c]__device__(int id){
+                    c[id] = a[id] + b[id];
+                }
+            );
+        }
+        e.wait();
         std::cout << "Out" << std::endl;
     }
 
