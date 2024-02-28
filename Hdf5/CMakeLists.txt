@@ -1,8 +1,20 @@
 cmake_minimum_required(VERSION 3.0)
-project(SandBox LANGUAGES CXX)
+project(FAVOR_PROJECT LANGUAGES CXX)
 
-add_executable(Hdf5Test hdf5_test.cpp)
-find_package(HDF5 REQUIRED COMPONENTS CXX)
-target_include_directories(Hdf5Test PRIVATE ${HDF5_INCLUDE_DIR})
-target_link_libraries(Hdf5Test PRIVATE HDF5::HDF5)
-target_compile_definitions(Hdf5Test PRIVATE -D HAVE_HDF5)
+#HDF5 INCLUDE
+function(HDF_SETTING EXE_NAME)
+FIND_PACKAGE(HDF5 COMPONENTS CXX HL)
+if(HDF5_FOUND)
+    target_include_directories(${EXE_NAME} PRIVATE ${HDF5_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../Hdf5)
+    target_compile_definitions(${EXE_NAME} PRIVATE -D HAVE_HDF5)
+    target_link_libraries(${EXE_NAME} PRIVATE HDF5::HDF5)
+    set_property(TARGET ${EXE_NAME} PROPERTY CXX_STANDARD 20) 
+endif()
+endfunction()
+
+
+add_executable(WriteExample Sample/writeHdf5.cpp)
+HDF_SETTING(WriteExample)
+
+add_executable(WriteRectGrid Sample/writeRectGrid.cpp)
+HDF_SETTING(WriteRectGrid)
